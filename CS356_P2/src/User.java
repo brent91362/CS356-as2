@@ -10,7 +10,9 @@ import javax.swing.JButton;
 import javax.swing.JTextField;
 import javax.swing.JList;
 import javax.swing.LayoutStyle.ComponentPlacement;
+import javax.swing.ListModel;
 
+import java.awt.BorderLayout;
 import java.awt.event.ActionListener;
 import java.awt.event.ActionEvent;
 
@@ -47,7 +49,8 @@ public class User extends Admin {
 		contentPane = new JPanel();
 		contentPane.setBorder(new EmptyBorder(5, 5, 5, 5));
 		setContentPane(contentPane);
-		
+		JList listFollowing = new JList();
+		listFollowing=new JList((ListModel) following);
 		JButton btnFollow = new JButton("Button - Follow User");
 		btnFollow.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
@@ -57,6 +60,8 @@ public class User extends Admin {
 				System.out.println(users.toString());
 				if(!(TextId.getText().isEmpty())&&users.contains(TextId.getText())){
 					following.add(findUser(TextId.getText()));
+//					listFollowing.add(TextId, 0);
+					TextId.setText("");
 				}
 //				news.update();
 			}
@@ -75,7 +80,6 @@ public class User extends Admin {
 		TextId.setText("TextArea - User Id");
 		TextId.setColumns(10);
 		TextId.setText(user);
-		JList listFollowing = new JList();
 		
 		JButton btnPost = new JButton("Button - Post Tweet");
 		
@@ -84,6 +88,7 @@ public class User extends Admin {
 		txtTextareaTweet.setColumns(10);
 		
 		JList listNews = new JList();
+		listNews =new JList( getNews() );
 		GroupLayout gl_contentPane = new GroupLayout(contentPane);
 		gl_contentPane.setHorizontalGroup(
 			gl_contentPane.createParallelGroup(Alignment.LEADING)
@@ -119,5 +124,9 @@ public class User extends Admin {
 					.addGap(19))
 		);
 		contentPane.setLayout(gl_contentPane);
+	}
+	private ListModel getNews() {
+		// TODO Auto-generated method stub
+		return null;
 	}
 }
