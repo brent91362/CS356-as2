@@ -5,6 +5,7 @@ import java.util.List;
 public class NewGroup implements Group{
 	private String name;
 	List<Group> groups = new ArrayList<Group>();
+	List<User> users = new ArrayList<User>();
 	@Override
 	public String getGroupName() {
 		return name;
@@ -26,6 +27,30 @@ public class NewGroup implements Group{
 			index++;
 		}
 		
+	}
+
+	@Override
+	public void addUser(User name) {
+		users.add(name);
+	}
+
+	@Override
+	public void removeUser(User name) {
+		users.remove(name);
+		
+	}
+	public boolean hasUser(String name){
+		for(int i=0; i<users.size();i++){
+			if(users.get(i).getName().equals(name)){
+				return false;
+			}
+		}
+		return true;
+	}
+
+	@Override
+	public List<User> getUsers() {
+		return users;
 	}
 
 }

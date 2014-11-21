@@ -7,7 +7,8 @@ public class MAIN {
 		EventQueue.invokeLater(new Runnable() {
 			public void run() {
 				try {
-					Admin frame = new Admin();
+					Admin frame = null;
+					frame.getInstance();
 				} catch (Exception e) {
 					e.printStackTrace();
 				}

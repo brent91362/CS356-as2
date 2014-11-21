@@ -20,7 +20,8 @@ import javax.swing.tree.DefaultMutableTreeNode;
 
 
 public class Admin extends JFrame {
-	private List<User> users = new ArrayList<User>();
+	private List<Group> groups = new ArrayList<Group>();
+	private Group root;
 	private JPanel contentPane;
 	private JTextField textUser;
 	private JTextField textGroup;
@@ -28,14 +29,15 @@ public class Admin extends JFrame {
 	/**
 	 * Create the frame.
 	 */
-//	private static Admin instance;
-//	public Admin getInstance(){
-//		if(instance == null){
-//			instance = new Admin();
-//		}
-//		return instance;
-//	}
-	public Admin() {
+	private static Admin instance;
+	public static Admin getInstance(){
+		if(instance == null){
+			instance = new Admin();
+		}
+		return instance;
+	}
+	private Admin() {
+		root = new NewGroup();
 		this.setVisible(true);
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		int h = 100, width =500, height =350;
@@ -48,9 +50,9 @@ public class Admin extends JFrame {
 		btnAddUser.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				String text=textUser.getText();
-				if(users.contains(text)||!text.equals("")){
-					User user = new User (text);
-					users.add(user);					
+				if(root.hasUser(text)||!text.equals("")){
+					User user = new User(text);
+					root.addUser(user);					
 				}
 				textUser.setText("");
 			}
@@ -84,10 +86,7 @@ public class Admin extends JFrame {
 					public void run() {
 						try {
 //							User u = new User("p");
-							User newUser = null;
-							String getName = textUser.getText();
-							newUser.getInstance();
-							newUser.init(getName, users);
+							Component newUser = new Component("p");
 						} catch (Exception e) {
 							e.printStackTrace();
 						}
@@ -167,11 +166,5 @@ public class Admin extends JFrame {
 					.addContainerGap(GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
 		);
 		contentPane.setLayout(gl_contentPane);
-	}
-	public boolean inFollowing(String user){
-		if(users.contains(user)){
-			return true;
-		}
-		return false;
 	}
 }
