@@ -16,15 +16,14 @@ import java.util.List;
 
 @SuppressWarnings("serial")
 public class Component extends JFrame{
-	private List<User> following;
+//	private List<User> following;
 	private JPanel contentPane;
 	private JTextField TextId;
 	private JTextField txtTextareaTweet;
 	public static String Name;
 	private JTextField textUsers;
 	private JTextField textNewsfeed;
-	public Component(String user) {
-		Name=user;
+	public Component(User user) {
 		this.setVisible(true);
 		setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
 		int h = 100, width =500, height =350;
@@ -35,14 +34,11 @@ public class Component extends JFrame{
 		JButton btnFollow = new JButton("Button - Follow User");
 		btnFollow.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				if(following==null){
-					following = new ArrayList<User>();
-				}
-				if(!(TextId.getText().isEmpty())&&following.contains(TextId.getText())){
-					User nu = new User(TextId.getText());
-					following.add(nu);
-					String text="";
-					for(User u: following){
+				if((!TextId.getText().isEmpty())&&
+						!Admin.getInstance().getRootUsers().contains(TextId.getText())){					
+        	    	user.addFollower(((User)Admin.getInstance().getFromRoot(TextId.getText())));
+        	    	String text="";
+					for(User u: user.getFollowing()){
 						text+=(u.getName())+"\n";
 					}
 					textUsers.setText(text);
@@ -54,9 +50,19 @@ public class Component extends JFrame{
 		TextId = new JTextField();
 		TextId.setText("TextArea - User Id");
 		TextId.setColumns(10);
-		this.setTitle(user);
+		this.setTitle(user.getName());
 		
 		JButton btnPost = new JButton("Button - Post Tweet");
+		btnPost.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				String tweet = txtTextareaTweet.getText();
+				if(!tweet.equals("")){
+					user.addMessage(tweet);
+					Admin.getInstance().addToFeed(user.getMessage());
+				}
+				updateField(user);
+			}
+		});
 		
 		txtTextareaTweet = new JTextField();
 		txtTextareaTweet.setText("TextArea - Tweet Message");
@@ -67,6 +73,7 @@ public class Component extends JFrame{
 		
 		textNewsfeed = new JTextField();
 		textNewsfeed.setColumns(10);
+		
 		GroupLayout gl_contentPane = new GroupLayout(contentPane);
 		gl_contentPane.setHorizontalGroup(
 			gl_contentPane.createParallelGroup(Alignment.LEADING)
@@ -102,11 +109,18 @@ public class Component extends JFrame{
 		);
 		contentPane.setLayout(gl_contentPane);
 	}
-	private ListModel getNews() {
-		// TODO Auto-generated method stub
-		return null;
+	public void updateField(User user){
+		String feed="";
+		for(User u: user.getFollowing()){
+			for(Message news:u.getFeed()){
+				feed +=(news.getMessage());
+			}
+		}
+		for(Message news:user.getFeed()){
+			feed +=(news.getMessage());
+		}
+		
+		textNewsfeed.setText(feed);
 	}
-	public List<User> getFollowing() {
-		return following;
-	}
+	
 }

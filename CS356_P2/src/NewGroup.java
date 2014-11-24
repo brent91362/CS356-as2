@@ -2,10 +2,14 @@ import java.util.ArrayList;
 import java.util.List;
 
 
-public class NewGroup implements Group{
+public class NewGroup implements Group, visitorElement{
 	private String name;
 	List<Group> groups = new ArrayList<Group>();
 	List<User> users = new ArrayList<User>();
+	public NewGroup(String name) {
+		this.name=name;
+	}
+
 	@Override
 	public String getGroupName() {
 		return name;
@@ -51,6 +55,17 @@ public class NewGroup implements Group{
 	@Override
 	public List<User> getUsers() {
 		return users;
+	}
+
+	@Override
+	public List<Group> allgroups() {
+		return groups;
+	}
+
+	@Override
+	public void accept(Visitor v) {
+		v.visitGroup(this);
+		
 	}
 
 }

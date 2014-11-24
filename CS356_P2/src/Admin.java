@@ -19,16 +19,28 @@ import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.DefaultMutableTreeNode;
 
 
-public class Admin extends JFrame {
-	private List<Group> groups = new ArrayList<Group>();
+@SuppressWarnings("serial")
+public class Admin extends JFrame implements visitorElement {
 	private Group root;
 	private JPanel contentPane;
 	private JTextField textUser;
 	private JTextField textGroup;
+	private List<Message> rootFeed;
 
 	/**
 	 * Create the frame.
 	 */
+	public List<User> getRootUsers(){
+		return root.getUsers();
+	}
+	public User getFromRoot(String name){
+		for(User u:root.getUsers()){
+			if(u.getName().equals(name)){
+				return u;
+			}
+		}
+		return null;
+	}
 	private static Admin instance;
 	public static Admin getInstance(){
 		if(instance == null){
@@ -36,8 +48,14 @@ public class Admin extends JFrame {
 		}
 		return instance;
 	}
+	public void addToFeed(Message m){
+		if(rootFeed==null){
+			rootFeed = new ArrayList<Message>();
+		}
+		rootFeed.add(m);
+	}
 	private Admin() {
-		root = new NewGroup();
+		root = new NewGroup("Root");
 		this.setVisible(true);
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		int h = 100, width =500, height =350;
@@ -45,29 +63,81 @@ public class Admin extends JFrame {
 		contentPane = new JPanel();
 		contentPane.setBorder(new EmptyBorder(5, 5, 5, 5));
 		setContentPane(contentPane);
-		
+
+		JTree tree = new JTree();
+		tree.setModel(new DefaultTreeModel(
+			new DefaultMutableTreeNode("Root") {
+			}
+		));
 		JButton btnAddUser = new JButton("Button - Add User");
 		btnAddUser.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				String text=textUser.getText();
 				if(root.hasUser(text)||!text.equals("")){
 					User user = new User(text);
-					root.addUser(user);					
+					root.addUser(user);	
+					DefaultMutableTreeNode node = (DefaultMutableTreeNode) tree.getLastSelectedPathComponent();
+					if (node == null){}
+					else{Object nodeInfo = node.getUserObject();
+				    for(Group g:root.allgroups()){
+				    	if(g.getGroupName().equals(nodeInfo.toString())){
+				    		g.addUser(user);
+				    		treeSet(tree, user, g);
+				    	}
+				    }}
+					treeSet(tree, user);				
 				}
+				
 				textUser.setText("");
 			}
 		});
 		
 		
 		JButton btnAddGroup = new JButton("Button - Add Group");
+		btnAddGroup.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				Group group = new NewGroup(textGroup.getText());
+				root.add(group);
+				treeSet(tree, group);
+			}
+		});
 		
-		JButton btnShowGroup = new JButton("Button - Show Group Total");
+		JButton btnShowGroup = new JButton("Group Total");
+		btnShowGroup.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				CountGroupVisitor count=new CountGroupVisitor();
+				instance.accept(count);
+				System.out.println(count.getCounter());
+			}
+		});
 		
-		JButton btnShowPos = new JButton("Button - Show Positive Percentage");
+		JButton btnShowPos = new JButton("Positive Percentage");
+		btnShowPos.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				CountMessageVisitor count=new CountMessageVisitor();
+				instance.accept(count);
+				System.out.println(count.getPosCounter());
+			}
+		});
 		
-		JButton btnShowUser = new JButton("Button - Show User Total");
+		JButton btnShowUser = new JButton("User Total");
+		btnShowUser.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				CountUsersVisitor count=new CountUsersVisitor();
+				instance.accept(count);
+				System.out.println(count.getCounter());
+				
+			}
+		});
 		
-		JButton btnShowMess = new JButton("Button - Show Messages Total");
+		JButton btnShowMess = new JButton("Messages Total");
+		btnShowMess.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				CountMessageVisitor count=new CountMessageVisitor();
+				instance.accept(count);
+				System.out.println(count.getCounter());
+			}
+		});
 		
 		textUser = new JTextField();
 		textUser.setText("TextArea - User ID");
@@ -80,91 +150,124 @@ public class Admin extends JFrame {
 		JButton btnView = new JButton("View User");
 		btnView.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				System.out.println("ldjkfa");
 				EventQueue.invokeLater(new Runnable() {
-					@SuppressWarnings("null")
 					public void run() {
-						try {
-//							User u = new User("p");
-							Component newUser = new Component("p");
-						} catch (Exception e) {
-							e.printStackTrace();
+						DefaultMutableTreeNode node = (DefaultMutableTreeNode) tree.getLastSelectedPathComponent();
+						if (node != null){
+							Object nodeInfo = node.getUserObject();
+							for(User u:root.getUsers()){
+								if(u.getName().equals(nodeInfo.toString())){
+									try {
+										new Component(u);
+									} catch (Exception e) {
+										e.printStackTrace();
+									}
+								}
+							}
 						}
 					}
 				});
 			}
 		});
 		
+		@SuppressWarnings("rawtypes")
 		JList list = new JList();
-		
-		JTree tree = new JTree();
-		tree.setModel(new DefaultTreeModel(
-			new DefaultMutableTreeNode("Root") {
-				{
-					DefaultMutableTreeNode node_1;
-					add(new DefaultMutableTreeNode("user1"));
-					add(new DefaultMutableTreeNode("user2"));
-					node_1 = new DefaultMutableTreeNode("group1");
-						node_1.add(new DefaultMutableTreeNode("user4"));
-					add(node_1);
-				}
-			}
-		));
+		User u = null;
+		treeSet(tree, u);
 		GroupLayout gl_contentPane = new GroupLayout(contentPane);
 		gl_contentPane.setHorizontalGroup(
 			gl_contentPane.createParallelGroup(Alignment.LEADING)
 				.addGroup(gl_contentPane.createSequentialGroup()
-					.addComponent(tree, GroupLayout.PREFERRED_SIZE, width/2-30, GroupLayout.PREFERRED_SIZE)
+					.addComponent(tree, GroupLayout.PREFERRED_SIZE, 220, GroupLayout.PREFERRED_SIZE)
 					.addPreferredGap(ComponentPlacement.RELATED)
 					.addGroup(gl_contentPane.createParallelGroup(Alignment.TRAILING)
 						.addGroup(gl_contentPane.createSequentialGroup()
 							.addComponent(list, GroupLayout.PREFERRED_SIZE, 1, GroupLayout.PREFERRED_SIZE)
-							.addPreferredGap(ComponentPlacement.RELATED, 271, Short.MAX_VALUE)
+							.addPreferredGap(ComponentPlacement.RELATED, 38, Short.MAX_VALUE)
 							.addComponent(textUser, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
 							.addPreferredGap(ComponentPlacement.RELATED)
-							.addComponent(btnAddUser, GroupLayout.PREFERRED_SIZE, width/4, GroupLayout.PREFERRED_SIZE))
+							.addComponent(btnAddUser, GroupLayout.PREFERRED_SIZE, 125, GroupLayout.PREFERRED_SIZE))
 						.addGroup(gl_contentPane.createSequentialGroup()
 							.addComponent(textGroup, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
 							.addPreferredGap(ComponentPlacement.RELATED)
-							.addComponent(btnAddGroup, GroupLayout.PREFERRED_SIZE, width/4, GroupLayout.PREFERRED_SIZE))
+							.addComponent(btnAddGroup, GroupLayout.PREFERRED_SIZE, 125, GroupLayout.PREFERRED_SIZE))
 						.addGroup(gl_contentPane.createSequentialGroup()
-							.addComponent(btnShowUser, GroupLayout.PREFERRED_SIZE, width/4, GroupLayout.PREFERRED_SIZE)
+							.addComponent(btnShowUser, GroupLayout.PREFERRED_SIZE, 125, GroupLayout.PREFERRED_SIZE)
 							.addPreferredGap(ComponentPlacement.RELATED)
-							.addComponent(btnShowGroup, GroupLayout.PREFERRED_SIZE, width/4, GroupLayout.PREFERRED_SIZE))
-						.addGroup(gl_contentPane.createSequentialGroup()
-							.addComponent(btnShowMess, GroupLayout.PREFERRED_SIZE, width/4, GroupLayout.PREFERRED_SIZE)
-							.addPreferredGap(ComponentPlacement.RELATED)
-							.addComponent(btnShowPos, GroupLayout.PREFERRED_SIZE, width/4, GroupLayout.PREFERRED_SIZE))
-						.addComponent(btnView, GroupLayout.PREFERRED_SIZE, width/2, GroupLayout.PREFERRED_SIZE)))
+							.addComponent(btnShowPos, GroupLayout.PREFERRED_SIZE, 125, Short.MAX_VALUE)
+							.addContainerGap())
+						.addGroup(Alignment.LEADING, gl_contentPane.createSequentialGroup()
+							.addComponent(btnShowMess, GroupLayout.PREFERRED_SIZE, 125, GroupLayout.PREFERRED_SIZE)
+							.addPreferredGap(ComponentPlacement.UNRELATED)
+							.addComponent(btnShowGroup, GroupLayout.PREFERRED_SIZE, 125, GroupLayout.PREFERRED_SIZE)
+							.addContainerGap())
+						.addComponent(btnView, Alignment.LEADING, GroupLayout.PREFERRED_SIZE, 250, GroupLayout.PREFERRED_SIZE)))
 		);
 		gl_contentPane.setVerticalGroup(
 			gl_contentPane.createParallelGroup(Alignment.LEADING)
 				.addGroup(gl_contentPane.createSequentialGroup()
 					.addGap(70)
 					.addGroup(gl_contentPane.createParallelGroup(Alignment.LEADING)
-						.addComponent(btnAddUser, GroupLayout.PREFERRED_SIZE, height/10, GroupLayout.PREFERRED_SIZE)
+						.addComponent(btnAddUser, GroupLayout.PREFERRED_SIZE, 35, GroupLayout.PREFERRED_SIZE)
 						.addGroup(gl_contentPane.createParallelGroup(Alignment.TRAILING)
 							.addComponent(list, GroupLayout.PREFERRED_SIZE, 1, GroupLayout.PREFERRED_SIZE)
 							.addComponent(textUser, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)))
 					.addPreferredGap(ComponentPlacement.RELATED)
 					.addGroup(gl_contentPane.createParallelGroup(Alignment.LEADING)
 						.addComponent(textGroup, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
-						.addComponent(btnAddGroup, GroupLayout.PREFERRED_SIZE, height/10, GroupLayout.PREFERRED_SIZE))
+						.addComponent(btnAddGroup, GroupLayout.PREFERRED_SIZE, 35, GroupLayout.PREFERRED_SIZE))
 					.addPreferredGap(ComponentPlacement.UNRELATED)
-					.addComponent(btnView, GroupLayout.PREFERRED_SIZE, height/10, GroupLayout.PREFERRED_SIZE)
-					.addPreferredGap(ComponentPlacement.RELATED, 31, Short.MAX_VALUE)
-					.addGroup(gl_contentPane.createParallelGroup(Alignment.LEADING)
-						.addComponent(btnShowGroup, GroupLayout.PREFERRED_SIZE, height/10, GroupLayout.PREFERRED_SIZE)
-						.addComponent(btnShowUser, GroupLayout.PREFERRED_SIZE, height/10, GroupLayout.PREFERRED_SIZE))
+					.addComponent(btnView, GroupLayout.PREFERRED_SIZE, 35, GroupLayout.PREFERRED_SIZE)
+					.addGroup(gl_contentPane.createParallelGroup(Alignment.BASELINE)
+						.addComponent(btnShowUser, GroupLayout.PREFERRED_SIZE, 35, GroupLayout.PREFERRED_SIZE)
+						.addComponent(btnShowPos, GroupLayout.PREFERRED_SIZE, 35, GroupLayout.PREFERRED_SIZE))
 					.addPreferredGap(ComponentPlacement.RELATED)
-					.addGroup(gl_contentPane.createParallelGroup(Alignment.LEADING)
-						.addComponent(btnShowMess, GroupLayout.PREFERRED_SIZE, height/10, GroupLayout.PREFERRED_SIZE)
-						.addComponent(btnShowPos, GroupLayout.PREFERRED_SIZE, height/10, GroupLayout.PREFERRED_SIZE))
-					.addGap(6))
+					.addGroup(gl_contentPane.createParallelGroup(Alignment.BASELINE)
+						.addComponent(btnShowMess, GroupLayout.PREFERRED_SIZE, 35, GroupLayout.PREFERRED_SIZE)
+						.addComponent(btnShowGroup, GroupLayout.PREFERRED_SIZE, 35, GroupLayout.PREFERRED_SIZE))
+					.addGap(71))
 				.addGroup(gl_contentPane.createSequentialGroup()
-					.addComponent(tree, GroupLayout.PREFERRED_SIZE, height-10, GroupLayout.PREFERRED_SIZE)
+					.addComponent(tree, GroupLayout.PREFERRED_SIZE, 340, GroupLayout.PREFERRED_SIZE)
 					.addContainerGap(GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
 		);
 		contentPane.setLayout(gl_contentPane);
 	}
+	public void treeSet(JTree tree, User u){
+		if(u!=null){
+			DefaultTreeModel model = (DefaultTreeModel)tree.getModel();
+			DefaultMutableTreeNode rootNode = (DefaultMutableTreeNode)model.getRoot();
+			rootNode.add(new DefaultMutableTreeNode(u.getName()));
+			model.reload();
+		}
+	}
+	public void treeSet(JTree tree, Group g){
+		if(g!=null){
+			DefaultTreeModel model = (DefaultTreeModel)tree.getModel();
+			DefaultMutableTreeNode rootNode = (DefaultMutableTreeNode)model.getRoot();
+			rootNode.add(new DefaultMutableTreeNode(g.getGroupName()));
+			model.reload();
+		}
+	}
+	public void treeSet(JTree tree, User u,Group g){
+		if(g!=null){
+			DefaultTreeModel model = (DefaultTreeModel)tree.getModel();
+			DefaultMutableTreeNode rootNode = (DefaultMutableTreeNode)model.getRoot();
+			rootNode.add(new DefaultMutableTreeNode(g.getGroupName()));
+			model.reload();
+		}
+	}
+	@Override
+	public void accept(Visitor v) {
+		v.visitGroup(root);
+		for(User u:root.getUsers()){
+			v.visitUser(u);
+		}
+		if(rootFeed!=null){
+			for(Message m : rootFeed){
+				v.visistUserNews(m);
+			}
+		}
+		
+	}
+	
 }
