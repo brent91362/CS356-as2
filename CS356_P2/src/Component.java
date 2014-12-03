@@ -59,6 +59,7 @@ public class Component extends JFrame{
 				if(!tweet.equals("")){
 					user.addMessage(tweet);
 					Admin.getInstance().addToFeed(user.getMessage());
+					getLastMessage(user);
 				}
 				updateField(user);
 			}
@@ -121,6 +122,10 @@ public class Component extends JFrame{
 		}
 		
 		textNewsfeed.setText(feed);
+	}
+
+	private void getLastMessage(User user) {
+			System.out.println(user.getLast());
 	}
 	
 }

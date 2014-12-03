@@ -4,12 +4,16 @@ import java.util.List;
 
 public class NewGroup implements Group, visitorElement{
 	private String name;
+	private final long timestamp;
 	List<Group> groups = new ArrayList<Group>();
 	List<User> users = new ArrayList<User>();
 	public NewGroup(String name) {
+		timestamp=System.currentTimeMillis();
 		this.name=name;
 	}
-
+	public long creationTime(){
+		return timestamp;
+	}
 	@Override
 	public String getGroupName() {
 		return name;
