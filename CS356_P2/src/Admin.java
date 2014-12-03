@@ -29,14 +29,17 @@ public class Admin extends JFrame implements visitorElement {
 	private JTextField textUser;
 	private JTextField textGroup;
 	private List<Message> rootFeed;
+	@SuppressWarnings("unused")
 	private User lastUser;
 
 	/**
 	 * Create the frame.
 	 */
+	//tracks total users in list root
 	public List<User> getRootUsers(){
 		return root.getUsers();
 	}
+	//finds user by name/id if user exists in root
 	public User getFromRoot(String name){
 		for(User u:root.getUsers()){
 			if(u.getName().equals(name)){
@@ -45,6 +48,7 @@ public class Admin extends JFrame implements visitorElement {
 		}
 		return null;
 	}
+	//implementing skeleton design by keeping instantiation private
 	private static Admin instance;
 	public static Admin getInstance(){
 		if(instance == null){
@@ -52,6 +56,7 @@ public class Admin extends JFrame implements visitorElement {
 		}
 		return instance;
 	}
+	//feed of all user currently in root
 	public void addToFeed(Message m){
 		if(rootFeed==null){
 			rootFeed = new ArrayList<Message>();
@@ -151,7 +156,8 @@ public class Admin extends JFrame implements visitorElement {
 		textGroup = new JTextField();
 		textGroup.setText("TextArea - Group Id");
 		textGroup.setColumns(10);
-		
+		//by clicking on the user in the treeview, admin can gain
+		//control of user functions
 		JButton btnView = new JButton("View User");
 		btnView.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
@@ -181,6 +187,9 @@ public class Admin extends JFrame implements visitorElement {
 		User u = null;
 		treeSet(tree, u);
 		
+		//traverses through all users in root group to see if criteria for a
+		//unique username is met, if there is at least one instance of 
+		//a username that is not, message is deisplayed
 		JButton btnValidate = new JButton("Validate");
 		btnValidate.addActionListener(new ActionListener() {
 			boolean bol = true;
@@ -197,7 +206,9 @@ public class Admin extends JFrame implements visitorElement {
 				}	
 			}
 		});
-		
+		//finds the last updated user or user that posted a message most recently
+		//by searching through the root group containing all users
+		//then prints to console the user and timestamp of that message
 		JButton btnLastUpdate = new JButton("Last Update");
 		btnLastUpdate.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {

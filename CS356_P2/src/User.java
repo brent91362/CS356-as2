@@ -1,10 +1,8 @@
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Observable;
-import java.util.Observer;
 
 
-public class User implements visitorElement{
+public class User implements visitorElement, Observer{
 	private final long creationtime;
 	private long lastUpdate=0;
 	private String name;
@@ -23,7 +21,7 @@ public class User implements visitorElement{
 	public void addMessage(String mess){
 		m = new Message(mess, name);
 		feed.add(m);
-		tellFollowing();
+		notifyFollowing();
 		lastUpdate=System.currentTimeMillis();
 	}
 	//gets time for last message added
@@ -31,8 +29,8 @@ public class User implements visitorElement{
 		return lastUpdate;
 	}
 	//tells followers message and add to their feed
-	public void tellFollowing(){
-		for(User u: following){
+	public void notifyFollowing(){
+		for(User u: follower){
 			u.update(this);
 		}
 	}
@@ -50,7 +48,7 @@ public class User implements visitorElement{
 	}
 	
 	public void addFollower(User user){
-		following.add(user);
+		follower.add(user);
 		user.getFollower().add(this);
 		feed.addAll(user.feed);
 	}
@@ -71,6 +69,9 @@ public class User implements visitorElement{
 		return feed;
 	}
 	public void update(User u) {
+		if(u.getMessage()==null){
+			return;
+		}
 		feed.add(u.getMessage());
 	}
 	

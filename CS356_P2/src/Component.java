@@ -6,12 +6,8 @@ import javax.swing.GroupLayout.Alignment;
 import javax.swing.JButton;
 import javax.swing.JTextField;
 import javax.swing.LayoutStyle.ComponentPlacement;
-import javax.swing.ListModel;
-
 import java.awt.event.ActionListener;
 import java.awt.event.ActionEvent;
-import java.util.ArrayList;
-import java.util.List;
 
 
 @SuppressWarnings("serial")
@@ -32,13 +28,15 @@ public class Component extends JFrame{
 		contentPane.setBorder(new EmptyBorder(5, 5, 5, 5));
 		setContentPane(contentPane);
 		JButton btnFollow = new JButton("Button - Follow User");
+		
+		//adds to the list of the users that this cureent user is following
 		btnFollow.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				if((!TextId.getText().isEmpty())&&
 						!Admin.getInstance().getRootUsers().contains(TextId.getText())){					
         	    	user.addFollower(((User)Admin.getInstance().getFromRoot(TextId.getText())));
         	    	String text="";
-					for(User u: user.getFollowing()){
+					for(User u: user.getFollower()){
 						text+=(u.getName())+"\n";
 					}
 					textUsers.setText(text);
@@ -51,7 +49,7 @@ public class Component extends JFrame{
 		TextId.setText("TextArea - User Id");
 		TextId.setColumns(10);
 		this.setTitle(user.getName());
-		
+		//adds new message to user and admin newFeed
 		JButton btnPost = new JButton("Button - Post Tweet");
 		btnPost.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
@@ -74,7 +72,7 @@ public class Component extends JFrame{
 		
 		textNewsfeed = new JTextField();
 		textNewsfeed.setColumns(10);
-		
+	//sets the layout of the UI
 		GroupLayout gl_contentPane = new GroupLayout(contentPane);
 		gl_contentPane.setHorizontalGroup(
 			gl_contentPane.createParallelGroup(Alignment.LEADING)
@@ -110,17 +108,12 @@ public class Component extends JFrame{
 		);
 		contentPane.setLayout(gl_contentPane);
 	}
+	//updates field by getting the current feed of the user
 	public void updateField(User user){
 		String feed="";
-		for(User u: user.getFollowing()){
-			for(Message news:u.getFeed()){
-				feed +=(news.getMessage());
-			}
-		}
 		for(Message news:user.getFeed()){
 			feed +=(news.getMessage());
 		}
-		
 		textNewsfeed.setText(feed);
 	}
 
